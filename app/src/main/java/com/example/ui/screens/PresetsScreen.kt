@@ -1,7 +1,5 @@
 package com.example.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -28,20 +26,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
-import androidx.compose.material.icons.filled.CellTower
-import androidx.compose.material.icons.filled.Equalizer
-import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Podcasts
-import androidx.compose.material.icons.filled.SignalCellular4Bar
-import androidx.compose.material.icons.filled.SpatialAudioOff
+import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.SurroundSound
-import androidx.compose.material.icons.filled.Traffic
 import androidx.compose.material.icons.outlined.StarOutline
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
@@ -79,7 +68,7 @@ fun PresetsScreen(
     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
     verticalArrangement = Arrangement.spacedBy(14.dp)
   ) {
-    // Section Title & Driver Prompt Header
+    // Section Header
     item {
       Row(
         modifier = Modifier
@@ -99,7 +88,7 @@ fun PresetsScreen(
               .background(colors.liveAmber)
           )
           Text(
-            text = "DRIVER QUICK PRESETS",
+            text = "WEB RADIO PRESETS",
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = FontFamily.Monospace,
@@ -109,7 +98,7 @@ fun PresetsScreen(
         }
 
         Text(
-          text = "${stations.size} Presets Programmed • Tap to Switch",
+          text = "${stations.size} Stations • Tap to Switch",
           fontSize = 11.sp,
           fontWeight = FontWeight.Medium,
           fontFamily = FontFamily.Monospace,
@@ -118,7 +107,7 @@ fun PresetsScreen(
       }
     }
 
-    // Presets List / Modules
+    // Presets List
     itemsIndexed(stations) { index, station ->
       val isActive = station.id == currentStation.id
       PresetCard(
@@ -130,7 +119,6 @@ fun PresetsScreen(
       )
     }
 
-    // Spacer to ensure last card clears the floating dock safely
     item {
       Spacer(modifier = Modifier.height(16.dp))
     }
@@ -161,8 +149,6 @@ private fun PresetCard(
     scale
   } else 1.0f
 
-  // In the design, the card is NOT all colored - it retains its clean surface background
-  // and has a prominent colored frame (border) around the entire card when active.
   val cardBorderColor = if (isActive) colors.primaryAccent else colors.cardBorder
   val cardBorderWidth = if (isActive) 2.5.dp else 1.dp
 
@@ -185,17 +171,18 @@ private fun PresetCard(
         .padding(horizontal = 18.dp, vertical = 16.dp),
       verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-      // Header Row: Preset Badge, Frequency, Band, Callsign, Status, Favorite
+      // Header Row: Preset Badge, Station Name, Status, Favorite Star
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
         Row(
+          modifier = Modifier.weight(1f),
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-          // Preset Badge (P1..P6)
+          // Preset Badge (P1..P8)
           Box(
             modifier = Modifier
               .clip(RoundedCornerShape(8.dp))
@@ -213,35 +200,16 @@ private fun PresetCard(
             )
           }
 
-          // Frequency & Band
-          Row(verticalAlignment = Alignment.Bottom) {
-            Text(
-              text = station.frequency,
-              fontSize = 38.sp,
-              fontWeight = FontWeight.ExtraBold,
-              fontFamily = FontFamily.Monospace,
-              letterSpacing = (-1).sp,
-              color = if (station.band == "AM") colors.liveAmber else colors.textPrimary
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-              text = station.band,
-              fontSize = 15.sp,
-              fontWeight = FontWeight.Bold,
-              fontFamily = FontFamily.Monospace,
-              color = if (station.band == "AM") colors.liveAmber else if (isActive) colors.primaryAccent else colors.textSecondary
-            )
-          }
-
-          // Station Callsign
+          // Station Callsign/Name
           Text(
             text = station.callSign,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.ExtraBold,
             fontFamily = FontFamily.Monospace,
             letterSpacing = 0.5.sp,
             color = colors.textPrimary,
-            maxLines = 1
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
           )
         }
 
@@ -281,10 +249,10 @@ private fun PresetCard(
             Box(
               modifier = Modifier
                 .clip(CircleShape)
-                .background(if (station.genreTag.contains("TRAFFIC")) colors.liveAmberBg else colors.surfaceContainer)
+                .background(colors.surfaceContainer)
                 .border(
                   width = 1.dp,
-                  color = if (station.genreTag.contains("TRAFFIC")) colors.liveAmberBorder else colors.cardBorder,
+                  color = colors.cardBorder,
                   shape = CircleShape
                 )
                 .padding(horizontal = 10.dp, vertical = 4.dp)
@@ -295,7 +263,7 @@ private fun PresetCard(
                 fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.Monospace,
                 letterSpacing = 0.5.sp,
-                color = if (station.genreTag.contains("TRAFFIC")) colors.liveAmber else colors.textSecondary
+                color = colors.textSecondary
               )
             }
           }
@@ -304,7 +272,7 @@ private fun PresetCard(
           Box(
             modifier = Modifier
               .testTag("favorite_button_${station.id}")
-              .size(46.dp)
+              .size(44.dp)
               .clip(RoundedCornerShape(12.dp))
               .background(if (isActive) colors.primaryAccent.copy(alpha = 0.12f) else colors.surfaceContainer)
               .border(
@@ -319,7 +287,7 @@ private fun PresetCard(
               imageVector = if (station.isFavorite) Icons.Default.Star else Icons.Outlined.StarOutline,
               contentDescription = "Toggle Favorite",
               tint = if (isActive) colors.primaryAccent else if (station.isFavorite) colors.liveAmber else colors.textSecondary.copy(alpha = 0.6f),
-              modifier = Modifier.size(24.dp)
+              modifier = Modifier.size(22.dp)
             )
           }
         }
@@ -333,7 +301,7 @@ private fun PresetCard(
           .background(colors.cardBorder.copy(alpha = 0.5f))
       )
 
-      // Bottom Row: Artist & Track Details + Audio Specs
+      // Bottom Row: Artist & Track Details
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -376,27 +344,14 @@ private fun PresetCard(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // Audio Quality Indicator
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-          val audioIcon = getAudioQualityIcon(station.audioQuality)
-          Icon(
-            imageVector = audioIcon,
-            contentDescription = station.audioQuality,
-            tint = if (isActive) colors.primaryAccent else colors.textSecondary,
-            modifier = Modifier.size(15.dp)
-          )
-          Text(
-            text = station.audioQuality,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = FontFamily.Monospace,
-            letterSpacing = 0.5.sp,
-            color = if (isActive) colors.primaryAccent else colors.textSecondary
-          )
-        }
+        Text(
+          text = "LIVE",
+          fontSize = 11.sp,
+          fontWeight = FontWeight.Bold,
+          fontFamily = FontFamily.Monospace,
+          letterSpacing = 0.5.sp,
+          color = if (isActive) colors.primaryAccent else colors.textSecondary
+        )
       }
     }
   }
@@ -404,19 +359,8 @@ private fun PresetCard(
 
 private fun getStationIcon(station: RadioStation): ImageVector {
   return when {
-    station.genreTag.contains("TRAFFIC") -> Icons.Default.Traffic
     station.genreTag.contains("TALK") || station.genreTag.contains("NEWS") -> Icons.Default.Podcasts
-    station.genreTag.contains("HD AUDIO") -> Icons.Default.Album
+    station.genreTag.contains("HITS") -> Icons.Default.Album
     else -> Icons.Default.MusicNote
-  }
-}
-
-private fun getAudioQualityIcon(quality: String): ImageVector {
-  return when {
-    quality.contains("HD1 STEREO") || quality.contains("SPATIAL") -> Icons.Default.SpatialAudioOff
-    quality.contains("HD2") -> Icons.Default.SurroundSound
-    quality.contains("50KW") || quality.contains("TOWER") -> Icons.Default.CellTower
-    quality.contains("HD1") -> Icons.Default.SignalCellular4Bar
-    else -> Icons.Default.GraphicEq
   }
 }

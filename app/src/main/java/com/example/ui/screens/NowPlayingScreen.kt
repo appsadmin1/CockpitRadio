@@ -27,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Podcasts
+import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.Icon
@@ -36,13 +37,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -60,7 +57,6 @@ fun NowPlayingScreen(
   station: RadioStation,
   isPlaying: Boolean,
   onToggleFavorite: () -> Unit,
-  onSelectMulticast: (Int) -> Unit,
   modifier: Modifier = Modifier
 ) {
   val colors = LocalCockpitColors.current
@@ -91,35 +87,31 @@ fun NowPlayingScreen(
       .fillMaxSize()
       .background(colors.background)
       .verticalScroll(rememberScrollState())
-      .padding(horizontal = 20.dp, vertical = 12.dp),
+      .padding(horizontal = 20.dp, vertical = 16.dp),
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.SpaceBetween
   ) {
-    // 1. Station Banner (High Contrast White / OLED Card)
+    // 1. Station Banner Header
     Box(
       modifier = Modifier
         .testTag("now_playing_station_banner")
         .fillMaxWidth()
-        .clip(RoundedCornerShape(16.dp))
+        .clip(RoundedCornerShape(20.dp))
         .background(colors.cardBackground)
-        .border(1.dp, colors.cardBorder, RoundedCornerShape(16.dp))
+        .border(1.dp, colors.cardBorder, RoundedCornerShape(20.dp))
     ) {
-      // Left gradient accent bar
+      // Left solid accent bar
       Box(
         modifier = Modifier
           .width(6.dp)
           .matchParentSize()
-          .background(
-            Brush.verticalGradient(
-              listOf(colors.primaryAccent, colors.liveAmber)
-            )
-          )
+          .background(colors.primaryAccent)
       )
 
       Row(
         modifier = Modifier
           .fillMaxWidth()
-          .padding(start = 18.dp, top = 12.dp, end = 16.dp, bottom = 12.dp),
+          .padding(start = 18.dp, top = 14.dp, end = 16.dp, bottom = 14.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
       ) {
@@ -127,56 +119,39 @@ fun NowPlayingScreen(
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+          Box(
+            modifier = Modifier
+              .size(42.dp)
+              .clip(CircleShape)
+              .background(colors.primaryAccent.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+          ) {
+            Icon(
+              imageVector = Icons.Default.Radio,
+              contentDescription = null,
+              tint = colors.primaryAccent,
+              modifier = Modifier.size(24.dp)
+            )
+          }
+
           Column {
             Text(
-              text = "BROADCAST FREQUENCY",
-              fontSize = 9.sp,
+              text = "PRESET P${station.presetNumber} • ${station.genreTag}",
+              fontSize = 10.sp,
               fontWeight = FontWeight.Bold,
               fontFamily = FontFamily.Monospace,
               letterSpacing = 1.sp,
               color = colors.primaryAccent
             )
-            Row(verticalAlignment = Alignment.Bottom) {
-              Text(
-                text = station.frequency,
-                fontSize = 40.sp,
-                fontWeight = FontWeight.ExtraBold,
-                fontFamily = FontFamily.Monospace,
-                color = colors.textPrimary,
-                letterSpacing = (-0.5).sp
-              )
-              Spacer(modifier = Modifier.width(4.dp))
-              Text(
-                text = station.band,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Monospace,
-                color = colors.primaryAccent
-              )
-            }
-          }
-
-          Box(
-            modifier = Modifier
-              .width(1.dp)
-              .height(34.dp)
-              .background(colors.cardBorder)
-          )
-
-          Column {
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
               text = station.callSign,
-              fontSize = 20.sp,
-              fontWeight = FontWeight.Bold,
+              fontSize = 22.sp,
+              fontWeight = FontWeight.ExtraBold,
               fontFamily = FontFamily.Monospace,
-              letterSpacing = 0.5.sp,
-              color = colors.textPrimary
-            )
-            Text(
-              text = "Greater Bay Area • ${station.audioQuality}",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Medium,
-              color = colors.textSecondary
+              color = colors.textPrimary,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis
             )
           }
         }
@@ -186,12 +161,12 @@ fun NowPlayingScreen(
           modifier = Modifier
             .testTag("now_playing_star_button")
             .size(48.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(if (station.isFavorite) colors.liveAmberBg else colors.surfaceContainer)
             .border(
               1.dp,
               if (station.isFavorite) colors.liveAmberBorder else colors.cardBorder,
-              RoundedCornerShape(12.dp)
+              RoundedCornerShape(14.dp)
             )
             .clickable { onToggleFavorite() },
           contentAlignment = Alignment.Center
@@ -206,13 +181,13 @@ fun NowPlayingScreen(
       }
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(20.dp))
 
-    // 2. Focal Audio Artwork & Broadcast Ring (Vinyl Disc)
+    // 2. Focal Audio Artwork & Animated Vinyl Disc
     Box(
       modifier = Modifier
         .testTag("now_playing_vinyl_disc")
-        .size(210.dp),
+        .size(220.dp),
       contentAlignment = Alignment.Center
     ) {
       // Outer Glowing Ring
@@ -227,7 +202,7 @@ fun NowPlayingScreen(
       // Inset Ring
       Box(
         modifier = Modifier
-          .size(196.dp)
+          .size(204.dp)
           .clip(CircleShape)
           .border(1.dp, colors.primaryAccent.copy(alpha = 0.2f), CircleShape)
       )
@@ -235,7 +210,7 @@ fun NowPlayingScreen(
       // Rotating Album Art Vinyl Disc
       Box(
         modifier = Modifier
-          .size(180.dp)
+          .size(188.dp)
           .graphicsLayer { rotationZ = if (isPlaying) rotation else 0f }
           .clip(CircleShape)
           .background(colors.cardBackground)
@@ -254,7 +229,7 @@ fun NowPlayingScreen(
         // Center Vinyl Spindle Hole
         Box(
           modifier = Modifier
-            .size(36.dp)
+            .size(38.dp)
             .clip(CircleShape)
             .background(colors.cardBackground)
             .border(2.dp, colors.cardBorder, CircleShape),
@@ -269,18 +244,18 @@ fun NowPlayingScreen(
         }
       }
 
-      // Floating Badge: HD RADIO 96kHz (Anchored at bottom center)
+      // Floating Live Stream Indicator Badge
       Box(
         modifier = Modifier
           .align(Alignment.BottomCenter)
           .clip(CircleShape)
           .background(colors.cardBackground.copy(alpha = 0.95f))
           .border(1.dp, colors.primaryAccent.copy(alpha = 0.6f), CircleShape)
-          .padding(horizontal = 12.dp, vertical = 4.dp)
+          .padding(horizontal = 14.dp, vertical = 5.dp)
       ) {
         Row(
           verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(5.dp)
+          horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
           Icon(
             imageVector = Icons.Default.GraphicEq,
@@ -289,7 +264,7 @@ fun NowPlayingScreen(
             modifier = Modifier.size(14.dp)
           )
           Text(
-            text = "HD RADIO 96kHz",
+            text = "HQ WEB AUDIO",
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = FontFamily.Monospace,
@@ -300,7 +275,7 @@ fun NowPlayingScreen(
       }
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(20.dp))
 
     // 3. Track Metadata
     Column(
@@ -315,7 +290,7 @@ fun NowPlayingScreen(
           .clip(CircleShape)
           .background(colors.liveAmberBg)
           .border(1.dp, colors.liveAmberBorder, CircleShape)
-          .padding(horizontal = 14.dp, vertical = 5.dp),
+          .padding(horizontal = 16.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
       ) {
@@ -337,7 +312,7 @@ fun NowPlayingScreen(
         )
       }
 
-      Spacer(modifier = Modifier.height(8.dp))
+      Spacer(modifier = Modifier.height(12.dp))
 
       // Track Title
       Text(
@@ -352,12 +327,12 @@ fun NowPlayingScreen(
         overflow = TextOverflow.Ellipsis
       )
 
-      Spacer(modifier = Modifier.height(3.dp))
+      Spacer(modifier = Modifier.height(4.dp))
 
-      // Artist — Album / Show details
+      // Artist Details
       Text(
-        text = "${station.currentArtist} — ${station.genreTag}",
-        fontSize = 14.sp,
+        text = station.currentArtist,
+        fontSize = 15.sp,
         fontWeight = FontWeight.Medium,
         color = colors.textSecondary,
         textAlign = TextAlign.Center,
@@ -365,64 +340,12 @@ fun NowPlayingScreen(
         overflow = TextOverflow.Ellipsis
       )
 
-      Spacer(modifier = Modifier.height(10.dp))
+      Spacer(modifier = Modifier.height(14.dp))
 
       // Real-time animated DSP Graphic Equalizer mini-strip
       EqualizerVisualizer(isPlaying = isPlaying)
     }
 
     Spacer(modifier = Modifier.height(16.dp))
-
-    // 4. Multicast HD Selector Chips (HD-1 / HD-2 / HD-3)
-    Row(
-      modifier = Modifier
-        .testTag("multicast_selector_row")
-        .fillMaxWidth(),
-      horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-      station.multicastChannels.forEachIndexed { index, channelTitle ->
-        val isSelected = station.selectedMulticast == index
-        Box(
-          modifier = Modifier
-            .weight(1f)
-            .height(44.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) colors.primaryAccent.copy(alpha = 0.15f) else colors.cardBackground)
-            .border(
-              width = if (isSelected) 2.dp else 1.dp,
-              color = if (isSelected) colors.primaryAccent else colors.cardBorder,
-              shape = RoundedCornerShape(12.dp)
-            )
-            .clickable { onSelectMulticast(index) },
-          contentAlignment = Alignment.Center
-        ) {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
-            modifier = Modifier.padding(horizontal = 6.dp)
-          ) {
-            if (isSelected) {
-              Box(
-                modifier = Modifier
-                  .size(6.dp)
-                  .clip(CircleShape)
-                  .background(colors.primaryAccent)
-              )
-            }
-            Text(
-              text = channelTitle,
-              fontSize = 11.sp,
-              fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-              fontFamily = FontFamily.Monospace,
-              color = if (isSelected) colors.primaryAccent else colors.textSecondary,
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis
-            )
-          }
-        }
-      }
-    }
-
-    Spacer(modifier = Modifier.height(14.dp))
   }
 }

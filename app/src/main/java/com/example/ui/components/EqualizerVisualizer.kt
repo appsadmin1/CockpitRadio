@@ -67,18 +67,13 @@ fun EqualizerVisualizer(
     horizontalArrangement = Arrangement.spacedBy(4.dp),
     verticalAlignment = Alignment.CenterVertically
   ) {
-    heights.forEachIndexed { index, fraction ->
-      val barColor = when (index) {
-        3, 4 -> colors.liveAmber
-        else -> colors.primaryAccent
-      }
-
+    heights.forEachIndexed { _, fraction ->
       Box(
         modifier = Modifier
           .width(3.5.dp)
           .height((fraction * 20).coerceIn(4f, 20f).dp)
           .clip(RoundedCornerShape(2.dp))
-          .background(barColor)
+          .background(colors.primaryAccent)
       )
     }
   }

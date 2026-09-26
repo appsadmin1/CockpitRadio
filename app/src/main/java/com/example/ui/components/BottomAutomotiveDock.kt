@@ -20,14 +20,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Album
-import androidx.compose.material.icons.filled.FastForward
-import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Radar
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -52,15 +51,13 @@ fun BottomAutomotiveDock(
   isNowPlayingScreen: Boolean,
   isPlaying: Boolean,
   isBuffering: Boolean,
-  isScanning: Boolean,
+  isFavorite: Boolean = false,
   onPresetsClick: () -> Unit,
   onNowPlayingClick: () -> Unit,
-  onSeekDown: () -> Unit,
   onPrevPreset: () -> Unit,
   onTogglePlay: () -> Unit,
   onNextPreset: () -> Unit,
-  onSeekUp: () -> Unit,
-  onScanClick: () -> Unit,
+  onToggleFavorite: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   val colors = LocalCockpitColors.current
@@ -100,7 +97,7 @@ fun BottomAutomotiveDock(
         )
       }
 
-      // Button 2: Previous Preset Step
+      // Button 2: Previous Station Step
       DockButton(
         icon = Icons.Default.SkipPrevious,
         label = "PREV",
@@ -109,17 +106,17 @@ fun BottomAutomotiveDock(
         onClick = onPrevPreset
       )
 
-      // Button 3: Main Play / Pause / Mute Hero Knob (Oversized Primary Cockpit Hero Button)
+      // Button 3: Main Play / Pause / Mute Hero Knob
       val heroInteraction = remember { MutableInteractionSource() }
       val heroPressed by heroInteraction.collectIsPressedAsState()
       val heroScale by animateFloatAsState(if (heroPressed) 0.92f else 1.0f, label = "heroScale")
 
       if (isNowPlayingScreen) {
-        // Circular luminous dial knob (matching Image 3 & 7)
+        // Circular luminous dial knob
         Box(
           modifier = Modifier
             .testTag("dock_hero_play_button")
-            .size(74.dp)
+            .size(70.dp)
             .scale(heroScale)
             .clip(CircleShape)
             .background(colors.primaryAccent)
@@ -141,18 +138,18 @@ fun BottomAutomotiveDock(
               imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
               contentDescription = if (isPlaying) "Pause Radio" else "Play Radio",
               tint = colors.onPrimaryAccent,
-              modifier = Modifier.size(44.dp)
+              modifier = Modifier.size(42.dp)
             )
           }
         }
       } else {
-        // Wide hero button (matching Image 1 & 5)
+        // Wide hero button
         Box(
           modifier = Modifier
             .testTag("dock_hero_play_button")
             .weight(1.35f)
             .scale(heroScale)
-            .height(64.dp)
+            .height(60.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(colors.primaryAccent)
             .clickable(
@@ -167,7 +164,7 @@ fun BottomAutomotiveDock(
           ) {
             if (isBuffering) {
               CircularProgressIndicator(
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.size(26.dp),
                 color = colors.onPrimaryAccent,
                 strokeWidth = 3.dp
               )
@@ -176,12 +173,12 @@ fun BottomAutomotiveDock(
                 imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                 contentDescription = if (isPlaying) "Pause Radio" else "Play Radio",
                 tint = colors.onPrimaryAccent,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(30.dp)
               )
             }
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-              text = if (isPlaying) "LIVE MUTE" else "LIVE TUNE",
+              text = if (isPlaying) "PAUSE" else "PLAY",
               fontSize = 10.sp,
               fontWeight = FontWeight.ExtraBold,
               fontFamily = FontFamily.Monospace,
@@ -192,7 +189,7 @@ fun BottomAutomotiveDock(
         }
       }
 
-      // Button 4: Next Preset Step
+      // Button 4: Next Station Step
       DockButton(
         icon = Icons.Default.SkipNext,
         label = "NEXT",
@@ -201,26 +198,15 @@ fun BottomAutomotiveDock(
         onClick = onNextPreset
       )
 
-      if (isNowPlayingScreen) {
-        // Button 5: Scan / Adjacent Stations
-        DockButton(
-          icon = Icons.Default.Radar,
-          label = if (isScanning) "SCANNING" else "SCAN",
-          testTag = "dock_scan_button",
-          tint = if (isScanning) colors.liveAmber else colors.primaryAccent,
-          modifier = Modifier.weight(1f),
-          onClick = onScanClick
-        )
-      } else {
-        // Button 5: Seek Up
-        DockButton(
-          icon = Icons.Default.FastForward,
-          label = "SEEK +",
-          testTag = "dock_seek_up_button",
-          modifier = Modifier.weight(1f),
-          onClick = onSeekUp
-        )
-      }
+      // Button 5: Favorite Star Quick Action
+      DockButton(
+        icon = if (isFavorite) Icons.Default.Star else Icons.Outlined.StarOutline,
+        label = "FAV",
+        testTag = "dock_favorite_button",
+        tint = if (isFavorite) colors.liveAmber else colors.textPrimary,
+        modifier = Modifier.weight(1f),
+        onClick = onToggleFavorite
+      )
     }
   }
 }
@@ -261,7 +247,7 @@ private fun DockButton(
         imageVector = icon,
         contentDescription = label,
         tint = tint ?: colors.textPrimary,
-        modifier = Modifier.size(24.dp)
+        modifier = Modifier.size(22.dp)
       )
       Spacer(modifier = Modifier.height(2.dp))
       Text(

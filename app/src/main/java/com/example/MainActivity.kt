@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.example.model.CockpitScreen
 import com.example.ui.components.BottomAutomotiveDock
-import com.example.ui.components.DirectTuneDialog
 import com.example.ui.components.SteeringWheelHudBanner
 import com.example.ui.components.TopCockpitBar
 import com.example.ui.screens.NowPlayingScreen
@@ -39,14 +38,11 @@ class MainActivity : ComponentActivity() {
     setContent {
       val isDaylightMode by viewModel.isDaylightMode.collectAsState()
       val currentScreen by viewModel.currentScreen.collectAsState()
-      val currentBand by viewModel.currentBand.collectAsState()
       val stations by viewModel.stations.collectAsState()
       val currentStation by viewModel.currentStation.collectAsState()
       val isPlaying by viewModel.isPlaying.collectAsState()
       val isBuffering by viewModel.isBuffering.collectAsState()
       val steeringWheelNotification by viewModel.steeringWheelNotification.collectAsState()
-      val isDirectTuneOpen by viewModel.isDirectTuneOpen.collectAsState()
-      val isScanning by viewModel.isScanning.collectAsState()
 
       // Handle Back button to return from Now Playing to Presets
       BackHandler(enabled = currentScreen == CockpitScreen.NOW_PLAYING) {
@@ -60,17 +56,11 @@ class MainActivity : ComponentActivity() {
             .testTag("cockpit_root_scaffold"),
           topBar = {
             TopCockpitBar(
-              currentBand = currentBand,
               isDaylightMode = isDaylightMode,
               isNowPlayingScreen = currentScreen == CockpitScreen.NOW_PLAYING,
               onToggleDaylight = { viewModel.toggleDaylightMode() },
-              onSelectBand = { band ->
-                viewModel.setBand(band)
-                viewModel.setScreen(CockpitScreen.PRESETS)
-              },
               onOpenPresets = { viewModel.setScreen(CockpitScreen.PRESETS) },
-              onOpenNowPlaying = { viewModel.setScreen(CockpitScreen.NOW_PLAYING) },
-              onOpenDirectTune = { viewModel.openDirectTune() }
+              onOpenNowPlaying = { viewModel.setScreen(CockpitScreen.NOW_PLAYING) }
             )
           },
           bottomBar = {
@@ -78,15 +68,13 @@ class MainActivity : ComponentActivity() {
               isNowPlayingScreen = currentScreen == CockpitScreen.NOW_PLAYING,
               isPlaying = isPlaying,
               isBuffering = isBuffering,
-              isScanning = isScanning,
+              isFavorite = currentStation.isFavorite,
               onPresetsClick = { viewModel.setScreen(CockpitScreen.PRESETS) },
               onNowPlayingClick = { viewModel.setScreen(CockpitScreen.NOW_PLAYING) },
-              onSeekDown = { viewModel.seekDown() },
               onPrevPreset = { viewModel.playPreviousStation("Control Dock") },
               onTogglePlay = { viewModel.togglePlayPause() },
               onNextPreset = { viewModel.playNextStation("Control Dock") },
-              onSeekUp = { viewModel.seekUp() },
-              onScanClick = { viewModel.toggleScan() }
+              onToggleFavorite = { viewModel.toggleFavorite(currentStation.id) }
             )
           }
         ) { innerPadding ->
@@ -129,25 +117,12 @@ class MainActivity : ComponentActivity() {
                     isPlaying = isPlaying,
                     onToggleFavorite = {
                       viewModel.toggleFavorite(currentStation.id)
-                    },
-                    onSelectMulticast = { index ->
-                      viewModel.selectMulticast(index)
                     }
                   )
                 }
               }
             }
           }
-        }
-
-        // Direct Frequency Keypad Dialog
-        if (isDirectTuneOpen) {
-          DirectTuneDialog(
-            onDismiss = { viewModel.closeDirectTune() },
-            onTune = { freq, band ->
-              viewModel.tuneDirectFrequency(freq, band)
-            }
-          )
         }
       }
     }
@@ -162,13 +137,15 @@ class MainActivity : ComponentActivity() {
       when (event.keyCode) {
         KeyEvent.KEYCODE_MEDIA_NEXT,
         KeyEvent.KEYCODE_CHANNEL_UP,
-        KeyEvent.KEYCODE_PAGE_DOWN -> {
+        KeyEvent.KEYCODE_PAGE_DOWN,
+        KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
           viewModel.playNextStation("Car Wheel [NEXT]")
           return true
         }
         KeyEvent.KEYCODE_MEDIA_PREVIOUS,
         KeyEvent.KEYCODE_CHANNEL_DOWN,
-        KeyEvent.KEYCODE_PAGE_UP -> {
+        KeyEvent.KEYCODE_PAGE_UP,
+        KeyEvent.KEYCODE_MEDIA_REWIND -> {
           viewModel.playPreviousStation("Car Wheel [PREV]")
           return true
         }
@@ -187,14 +164,6 @@ class MainActivity : ComponentActivity() {
         KeyEvent.KEYCODE_MEDIA_STOP -> {
           viewModel.player.pause()
           viewModel.onSteeringWheelEvent("MUTE")
-          return true
-        }
-        KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
-          viewModel.seekUp()
-          return true
-        }
-        KeyEvent.KEYCODE_MEDIA_REWIND -> {
-          viewModel.seekDown()
           return true
         }
       }
