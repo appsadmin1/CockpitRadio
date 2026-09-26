@@ -1,0 +1,6 @@
+{
+  "name": "Cockpit Radio",
+  "description": "Android Auto radio streaming cockpit with tactile daytime and OLED night presets, HD Radio stations, and steering wheel media controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
