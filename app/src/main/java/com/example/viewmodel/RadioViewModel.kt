@@ -41,7 +41,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
       currentArtist = "אקו 99FM",
       currentTrack = "מוזיקה מעולה בדרכים • Eco Hits",
       currentShow = "בוקר אקו • מוזיקה ירוקה וקצבית",
-      streamUrl = "https://eco-live.mediacast.co.il/99fm_mp3",
+      streamUrl = "https://eco-live.mediacast.co.il/99fm_aac",
       albumArtwork = defaultArtwork,
       isFavorite = false
     ),
@@ -101,7 +101,7 @@ class RadioViewModel(application: Application) : AndroidViewModel(application) {
       currentArtist = "כאן 88",
       currentTrack = "מוזיקה מעולה • Rock, Indie & Jazz",
       currentShow = "ערב עירוני • הבחירות של כאן 88",
-      streamUrl = "https://kanliveicy.media.kan.org.il/icy/kan88_mp3",
+      streamUrl = "https://29073.live.streamtheworld.com/KAN_88.mp3",
       albumArtwork = defaultArtwork,
       isFavorite = false
     ),
